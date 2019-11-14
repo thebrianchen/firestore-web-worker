@@ -27,4 +27,9 @@ function disableNetwork() {
   sharedWorker.port.postMessage('disableNetwork');
 }
 
+/** Writes data to Firestore. */
+function writeData() {
+  sharedWorker.port.postMessage('writeData');
+}
+
 main();

@@ -25,9 +25,9 @@ function main() {
   }
 
   dedicatedWorker.onmessage = function(event) {
-    // Mark persistence as unavailable to other tabs, if this tab has 
-    // successfully enabled persistence.
-    if (event.data === 'takePersistence') {
+    if (event.data === 'persistenceTaken') {
+      // Mark persistence as unavailable to other tabs, if this tab has
+      // successfully enabled persistence.
       localStorage.setItem('persistenceAvailable', 'false');
       isUsingPersistence = true;
     }
@@ -47,6 +47,10 @@ function main() {
 /**
  * Checks if persistence is available in LocalStorage, or initializes the
  * field if it has not yet been set.
+ *
+ * TODO: Currently, if the page crahses, persistence could be permanently
+ * marked as unavailable in LocalStorage. Implementing some sort of time-based
+ * expiration would make this more robust.
  */
 function isPersistenceAvailable() {
   if (localStorage.getItem('persistenceAvailable') === 'false') {
@@ -67,6 +71,11 @@ function enableNetwork() {
 /** Disable the network in Firestore by posting a message to the worker. */
 function disableNetwork() {
   dedicatedWorker.postMessage('disableNetwork');
+}
+
+/** Writes data to Firestore. */
+function writeData() {
+  dedicatedWorker.postMessage('writeData');
 }
 
 main();

@@ -5,12 +5,16 @@
  * 
  * Must be loaded and initialized from your main page:
  * dedicatedWorker = new Worker("firebase-worker.js");
+ *
+ * In this example, you can test that persistence is working by disabling the
+ * network and writing data. When you refresh a page that has persistence
+ * enabled, you can see that the data persists to the server.
  */
 
 importScripts('../firebase/firebase-app.js');
 importScripts('../firebase/firebase-firestore.js');
 
-var firebaseConfig = {
+var config = {
   apiKey: "api-key",
   authDomain: "project-id.firebaseapp.com",
   databaseURL: "https://project-id.firebaseio.com",
@@ -23,21 +27,27 @@ var firebaseConfig = {
 
 /** The Firestore instance. */
 self.db = null;
-self.onmessage = async function(e) {
-  // Do Firebase work here.
+self.onmessage = function(e) {
   if (e.data === 'persistenceAvailable') {
-    await initializeApp(true);
+    initializeApp(/*withPersistence=*/true);
   } else if (e.data === 'persistenceUnavailable') {
-    await initializeApp(false);
+    initializeApp(/*withPersistence=*/false);
   } else if (e.data === 'enableNetwork') {
-    await self.db.enableNetwork().then(() => {
+    self.db.enableNetwork().then(() => {
       console.log('Enabled network');
     });
   } else if (e.data === 'disableNetwork') {
-    await self.db.disableNetwork().then(() => {
+    self.db.disableNetwork().then(() => {
       console.log('Disabled network');
     });
+  } else if (e.data === 'writeData') {
+    self.db.collection('followers').doc('user1').set({
+      name: 'Bobby',
+      // Set age to a random value to test that persistence works.
+      age: Math.floor(Math.random() * 80 + 20)
+    })
   }
+  // Add message handlers that do Firebase work here.
 };
 
 async function initializeApp(withPersistence) {
@@ -46,12 +56,21 @@ async function initializeApp(withPersistence) {
   if (withPersistence) {
     console.log('Starting Firestore with persistence.');
     await self.db.enablePersistence({experimentalForce: true}).then(() => {
-      postMessage('takePersistence');
+      postMessage('persistenceTaken');
     });
   } else {
     console.log(
       'Persistence unavailable. Starting Firestore with persistence will error.'
     );
     // await self.db.enablePersistence();  // This will error
-  } 
+  }
+
+  // Listen to data.
+  self.db.collection('followers')
+    .onSnapshot({ includeMetadataChanges: true }, function(snapshot) {
+      snapshot.docChanges().forEach(function(change) {
+          var source = snapshot.metadata.fromCache ? "local cache" : "server";
+          console.log("Data came from " + source, change.doc.data());
+    });
+  });
 }
