@@ -41,7 +41,7 @@ self.onmessage = function(e) {
       console.log('Disabled network');
     });
   } else if (e.data === 'writeData') {
-    self.db.collection('followers').doc('user1').set({
+    self.db.doc('followers/user1').set({
       name: 'Bobby',
       // Set age to a random value to test that persistence works.
       age: Math.floor(Math.random() * 80 + 20)
@@ -50,13 +50,15 @@ self.onmessage = function(e) {
   // Add message handlers that do Firebase work here.
 };
 
-async function initializeApp(withPersistence) {
+function initializeApp(withPersistence) {
   const app = firebase.initializeApp(config, "app");
   self.db = firebase.firestore(app);
   if (withPersistence) {
     console.log('Starting Firestore with persistence.');
-    await self.db.enablePersistence({experimentalForce: true}).then(() => {
+    self.db.enablePersistence({experimentalForce: true}).then(() => {
       postMessage('persistenceTaken');
+    }).catch((err) => {
+      console.error('error enabling persistence', err);
     });
   } else {
     console.log(
@@ -66,7 +68,7 @@ async function initializeApp(withPersistence) {
   }
 
   // Listen to data.
-  self.db.collection('followers')
+  self.db.doc('followers/user1')
     .onSnapshot({ includeMetadataChanges: true }, function(snapshot) {
       snapshot.docChanges().forEach(function(change) {
           var source = snapshot.metadata.fromCache ? "local cache" : "server";

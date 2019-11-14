@@ -46,7 +46,7 @@ self.onconnect = function(e) {
         console.log('Disabled network');
       });
     } else if (e.data === 'writeData') {
-      self.db.collection('followers').doc('user1').set({
+      self.db.doc('followers/user1').set({
         name: 'Bobby',
         // Set age to a random value to test that persistence works.
         age: Math.floor(Math.random() * 80 + 20)
@@ -63,7 +63,7 @@ async function initializeApp() {
   await self.db.enablePersistence({experimentalForce: true});
 
   // Listen to data.
-  self.db.collection('followers')
+  self.db.doc('followers/user1')
     .onSnapshot({ includeMetadataChanges: true }, function(snapshot) {
       snapshot.docChanges().forEach(function(change) {
           var source = snapshot.metadata.fromCache ? "local cache" : "server";
