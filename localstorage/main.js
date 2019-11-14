@@ -48,7 +48,7 @@ function main() {
  * Checks if persistence is available in LocalStorage, or initializes the
  * field if it has not yet been set.
  *
- * TODO: Currently, if the page crahses, persistence could be permanently
+ * TODO: Currently, if the page crashes, persistence could be permanently
  * marked as unavailable in LocalStorage. Implementing some sort of time-based
  * expiration would make this more robust.
  */
