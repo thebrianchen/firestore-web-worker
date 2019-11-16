@@ -70,9 +70,7 @@ function initializeApp(withPersistence) {
   // Listen to data.
   self.db.doc('followers/user1')
     .onSnapshot({ includeMetadataChanges: true }, function(snapshot) {
-      snapshot.docChanges().forEach(function(change) {
-          var source = snapshot.metadata.fromCache ? "local cache" : "server";
-          console.log("Data came from " + source, change.doc.data());
-    });
+      var source = snapshot.metadata.fromCache ? "local cache" : "server";
+      console.log("Data came from " + source, snapshot.data());
   });
 }
